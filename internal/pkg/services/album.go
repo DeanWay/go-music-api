@@ -2,12 +2,13 @@ package services
 
 import (
 	"fmt"
-	"go-todo-app/internal/pkg/interfaces"
-	"go-todo-app/internal/pkg/models"
-	"go-todo-app/internal/pkg/storage"
 	"time"
 
 	"github.com/google/uuid"
+
+	"go-todo-app/internal/pkg/models"
+	"go-todo-app/internal/pkg/payloads"
+	"go-todo-app/internal/pkg/storage"
 )
 
 type AlbumService struct {
@@ -31,7 +32,7 @@ func (service AlbumService) FindAlbumById(id string) (models.Album, error) {
 }
 
 func (service AlbumService) AddAlbum(
-	request interfaces.AlbumAttributes,
+	request payloads.AlbumAttributes,
 ) models.Album {
 	newAlbum := models.Album{
 		Uuid:      uuid.New(),

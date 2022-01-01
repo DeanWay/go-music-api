@@ -6,13 +6,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"go-todo-app/internal/pkg/interfaces"
 	"go-todo-app/internal/pkg/models"
-	"go-todo-app/internal/pkg/services"
+	"go-todo-app/internal/pkg/payloads"
 )
 
+type AlbumServiceInterface interface {
+	GetAllAlbums() []models.Album
+	AddAlbum(attrs payloads.AlbumAttributes) models.Album
+	FindAlbumById(id string) (models.Album, error)
+}
+
 type AlbumRouter struct {
-	AlbumService services.AlbumService
+	AlbumService AlbumServiceInterface
 }
 
 func (resource AlbumRouter) GetAlbums(c *gin.Context) {
@@ -22,7 +27,7 @@ func (resource AlbumRouter) GetAlbums(c *gin.Context) {
 
 func (resource AlbumRouter) PostAlbums(c *gin.Context) {
 	var albumRequest struct {
-		Attributes interfaces.AlbumAttributes `json:"attributes"`
+		Attributes payloads.AlbumAttributes `json:"attributes"`
 	}
 	if err := c.BindJSON(&albumRequest); err != nil {
 		badRequest(c)
@@ -48,10 +53,10 @@ func badRequest(c *gin.Context) {
 	c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
 }
 
-func albumToResponse(album models.Album) interfaces.Document {
-	return interfaces.Document{
+func albumToResponse(album models.Album) payloads.Document {
+	return payloads.Document{
 		Id: album.Uuid.String(),
-		Attributes: interfaces.AlbumAttributes{
+		Attributes: payloads.AlbumAttributes{
 			Title:     album.Title,
 			Artist:    album.Artist,
 			Price:     album.Price,
@@ -60,8 +65,8 @@ func albumToResponse(album models.Album) interfaces.Document {
 	}
 }
 
-func albumsToResponse(albums []models.Album) []interfaces.Document {
-	newList := make([]interfaces.Document, len(albums), len(albums))
+func albumsToResponse(albums []models.Album) []payloads.Document {
+	newList := make([]payloads.Document, len(albums), len(albums))
 	for i, v := range albums {
 		newList[i] = albumToResponse(v)
 	}

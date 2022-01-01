@@ -1,4 +1,4 @@
-package interfaces
+package payloads
 
 type Document struct {
 	Id         string      `json:"id"`
