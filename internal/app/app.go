@@ -27,7 +27,10 @@ func App() *gin.Engine {
 
 func initAlbumRepo() repository.AlbumRepository {
 	albumRepo := keyvalue.AlbumKeyValueRepo{
-		Store: redisStore(),
+		Store: redisStore("album"),
+		SongRepo: keyvalue.SongKeyValueRepo{
+			Store: redisStore("song"),
+		},
 	}
 	return albumRepo
 }
@@ -36,8 +39,9 @@ func memoryStore() storage.KeyValueStorage {
 	return memory.MemoryStorage{}
 }
 
-func redisStore() storage.KeyValueStorage {
+func redisStore(collectionName string) storage.KeyValueStorage {
 	return redisStorage.RedisStorage{
+		CollectionName: collectionName,
 		Client: redis.NewClient(&redis.Options{
 			Addr:     "localhost:6379",
 			Password: "", // no password set

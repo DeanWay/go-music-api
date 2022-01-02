@@ -14,7 +14,10 @@ type AlbumSearchParams struct {
 
 type AlbumRepository interface {
 	GetAllAlbums() []models.Album
-	AddAlbum(attrs payloads.AlbumAttributes) models.Album
+	AddAlbum(
+		attrs payloads.AlbumAttributes,
+		songs []payloads.SongAttributes,
+	) models.Album
 	FindAlbumById(id string) (models.Album, error)
 	SearchAlbums(params AlbumSearchParams) []models.Album
 }

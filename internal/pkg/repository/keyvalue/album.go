@@ -13,7 +13,8 @@ import (
 )
 
 type AlbumKeyValueRepo struct {
-	Store storage.KeyValueStorage
+	Store    storage.KeyValueStorage
+	SongRepo SongKeyValueRepo
 }
 
 func (repo AlbumKeyValueRepo) GetAllAlbums() []models.Album {
@@ -37,15 +38,22 @@ func (repo AlbumKeyValueRepo) FindAlbumById(
 }
 
 func (repo AlbumKeyValueRepo) AddAlbum(
-	request payloads.AlbumAttributes,
+	attrs payloads.AlbumAttributes,
+	songAttrs []payloads.SongAttributes,
 ) models.Album {
 	newAlbum := models.Album{
 		Uuid:      uuid.New(),
-		Title:     request.Title,
-		Artist:    request.Artist,
-		Price:     request.Price,
+		Title:     attrs.Title,
+		Artist:    attrs.Artist,
+		Price:     attrs.Price,
 		CreatedAt: time.Now().UTC(),
 	}
+	songUuids := make([]uuid.UUID, len(songAttrs), len(songAttrs))
+	for i, song := range songAttrs {
+		newSong := repo.SongRepo.AddSong(newAlbum.Uuid, song)
+		songUuids[i] = newSong.Uuid
+	}
+	newAlbum.SongUuids = songUuids
 	albumJson, _ := json.Marshal(newAlbum)
 	repo.Store.Insert(newAlbum.Uuid.String(), string(albumJson))
 	return newAlbum

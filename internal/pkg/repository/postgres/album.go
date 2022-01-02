@@ -17,7 +17,7 @@ func (repo AlbumPostgresRepo) FindAlbumById(id string) (models.Album, error) {
 }
 
 func (repo AlbumPostgresRepo) AddAlbum(
-	request payloads.AlbumAttributes,
+	attrs payloads.AlbumAttributes,
 ) models.Album {
 	panic("not implemented")
 }

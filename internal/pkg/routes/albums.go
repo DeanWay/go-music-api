@@ -2,7 +2,6 @@ package routes
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -28,7 +27,10 @@ func (resource AlbumRouter) PostAlbums(c *gin.Context) {
 		badRequest(c)
 		return
 	}
-	newAlbum := resource.AlbumRepository.AddAlbum(albumRequest.Attributes)
+	newAlbum := resource.AlbumRepository.AddAlbum(
+		albumRequest.Attributes,
+		[]payloads.SongAttributes{},
+	)
 	response := albumToResponse(newAlbum)
 	c.IndentedJSON(http.StatusCreated, response)
 }
@@ -75,13 +77,26 @@ func (resource AlbumRouter) SearchAlbums(c *gin.Context) {
 }
 
 func albumToResourceObject(album models.Album) payloads.ResourceObject {
+	songLinks := payloads.ResourceLinkage{}
+	for _, songUuid := range album.SongUuids {
+		songLinks = append(songLinks, payloads.ResourceIdentifier{
+			Id:   songUuid.String(),
+			Type: "song",
+		})
+	}
+
 	return payloads.ResourceObject{
-		Id: album.Uuid.String(),
+		Id:   album.Uuid.String(),
+		Type: "album",
 		Attributes: payloads.AlbumAttributes{
-			Title:     album.Title,
-			Artist:    album.Artist,
-			Price:     album.Price,
-			CreatedAt: album.CreatedAt.Format(time.RFC1123),
+			Title:  album.Title,
+			Artist: album.Artist,
+			Price:  album.Price,
+		},
+		Relationships: payloads.ResponseRelationshipMap{
+			"songs": payloads.ResponseRelationshipModel{
+				Data: songLinks,
+			},
 		},
 	}
 }

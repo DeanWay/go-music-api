@@ -1,15 +1,34 @@
 package payloads
 
 type AlbumAttributes struct {
-	Title     string  `json:"title"`
-	Artist    string  `json:"artist"`
-	Price     float64 `json:"price"`
-	CreatedAt string  `json:"createdAt"`
+	Title  string  `json:"title"`
+	Artist string  `json:"artist"`
+	Price  float64 `json:"price"`
+}
+
+type SongAttributes struct {
+	Title           string `json:"title"`
+	DurationSeconds uint   `json:"durationSeconds"`
 }
 
 type ResourceObject struct {
-	Id         string      `json:"id"`
-	Attributes interface{} `json:"attributes"`
+	Id            string                  `json:"id"`
+	Type          string                  `json:"type"`
+	Attributes    interface{}             `json:"attributes"`
+	Relationships ResponseRelationshipMap `json:"relationships"`
+}
+
+type ResponseRelationshipMap map[string]ResponseRelationshipModel
+
+type ResponseRelationshipModel struct {
+	Data ResourceLinkage `json:"data"`
+}
+
+type ResourceLinkage []ResourceIdentifier
+
+type ResourceIdentifier struct {
+	Id   string `json:"id"`
+	Type string `json:"type"`
 }
 
 type Response struct {
