@@ -16,9 +16,10 @@ func App() *gin.Engine {
 		AlbumRepository: initAlbumRepo(),
 	}
 
-	appEngine.GET("/albums", albumRouter.GetAlbums)
-	appEngine.GET("/albums/:id", albumRouter.GetAlbumByID)
+	appEngine.GET("/album/:id", albumRouter.GetAlbumByID)
+	appEngine.GET("/albums", albumRouter.ListAlbums)
 	appEngine.POST("/albums", albumRouter.PostAlbums)
+	appEngine.GET("/albums/search", albumRouter.SearchAlbums)
 	return appEngine
 }
 

@@ -15,7 +15,7 @@ type AlbumRouter struct {
 	AlbumRepository repository.AlbumRepository
 }
 
-func (resource AlbumRouter) GetAlbums(c *gin.Context) {
+func (resource AlbumRouter) ListAlbums(c *gin.Context) {
 	responseList := albumsToResponse(resource.AlbumRepository.GetAllAlbums())
 	c.IndentedJSON(http.StatusOK, responseList)
 }
@@ -44,8 +44,34 @@ func (resource AlbumRouter) GetAlbumByID(c *gin.Context) {
 	}
 }
 
-func badRequest(c *gin.Context) {
-	c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "bad request"})
+func (resource AlbumRouter) SearchAlbums(c *gin.Context) {
+	query := repository.AlbumSearchParams{}
+	priceHigh, err := parseFloatQuery(c, "price-high")
+	if err != nil {
+		badRequest(c)
+		return
+	}
+	query.PriceHigh = priceHigh
+
+	priceLow, err := parseFloatQuery(c, "price-low")
+	if err != nil {
+		badRequest(c)
+		return
+	}
+	query.PriceLow = priceLow
+
+	title, present := c.GetQuery("title")
+	if present {
+		query.Title = &title
+	}
+
+	artist, present := c.GetQuery("artist")
+	if present {
+		query.Artist = &artist
+	}
+
+	albums := resource.AlbumRepository.SearchAlbums(query)
+	c.IndentedJSON(http.StatusOK, albums)
 }
 
 func albumToResponse(album models.Album) payloads.Document {
