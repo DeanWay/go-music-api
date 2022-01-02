@@ -1,6 +1,6 @@
 package storage
 
-type Storage interface {
+type KeyValueStorage interface {
 	Insert(id string, thing interface{}) error
 	GetById(id string) (interface{}, error)
 	List() []interface{}

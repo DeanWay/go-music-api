@@ -8,20 +8,15 @@ import (
 
 	"go-todo-app/internal/pkg/models"
 	"go-todo-app/internal/pkg/payloads"
+	"go-todo-app/internal/pkg/repository"
 )
 
-type AlbumServiceInterface interface {
-	GetAllAlbums() []models.Album
-	AddAlbum(attrs payloads.AlbumAttributes) models.Album
-	FindAlbumById(id string) (models.Album, error)
-}
-
 type AlbumRouter struct {
-	AlbumService AlbumServiceInterface
+	AlbumRepository repository.AlbumRepository
 }
 
 func (resource AlbumRouter) GetAlbums(c *gin.Context) {
-	responseList := albumsToResponse(resource.AlbumService.GetAllAlbums())
+	responseList := albumsToResponse(resource.AlbumRepository.GetAllAlbums())
 	c.IndentedJSON(http.StatusOK, responseList)
 }
 
@@ -33,14 +28,14 @@ func (resource AlbumRouter) PostAlbums(c *gin.Context) {
 		badRequest(c)
 		return
 	}
-	newAlbum := resource.AlbumService.AddAlbum(albumRequest.Attributes)
+	newAlbum := resource.AlbumRepository.AddAlbum(albumRequest.Attributes)
 	response := albumToResponse(newAlbum)
 	c.IndentedJSON(http.StatusCreated, response)
 }
 
 func (resource AlbumRouter) GetAlbumByID(c *gin.Context) {
 	id := c.Param("id")
-	album, err := resource.AlbumService.FindAlbumById(id)
+	album, err := resource.AlbumRepository.FindAlbumById(id)
 	if err == nil {
 		response := albumToResponse(album)
 		c.IndentedJSON(http.StatusOK, response)

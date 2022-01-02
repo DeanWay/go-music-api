@@ -4,15 +4,15 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"go-todo-app/internal/pkg/examples"
+	"go-todo-app/internal/pkg/repository"
 	"go-todo-app/internal/pkg/routes"
-	"go-todo-app/internal/pkg/services"
 	"go-todo-app/internal/pkg/storage/memory"
 )
 
 func App() *gin.Engine {
 	appEngine := gin.Default()
 	albumRouter := routes.AlbumRouter{
-		AlbumService: initAlbumSerice(),
+		AlbumRepository: initAlbumRepo(),
 	}
 
 	appEngine.GET("/albums", albumRouter.GetAlbums)
@@ -21,10 +21,10 @@ func App() *gin.Engine {
 	return appEngine
 }
 
-func initAlbumSerice() services.AlbumService {
-	albumService := services.AlbumService{
+func initAlbumRepo() repository.AlbumRepository {
+	albumRepo := repository.AlbumKeyValueRepo{
 		Store: memory.MemoryStorage{},
 	}
-	examples.AddExampleAlbums(albumService)
-	return albumService
+	examples.AddExampleAlbums(albumRepo)
+	return albumRepo
 }
