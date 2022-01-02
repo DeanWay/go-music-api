@@ -2,7 +2,6 @@ package keyvalue
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -55,7 +54,6 @@ func (repo AlbumKeyValueRepo) AddAlbum(
 func (repo AlbumKeyValueRepo) SearchAlbums(
 	params repository.AlbumSearchParams,
 ) []models.Album {
-	fmt.Println(params)
 	albums := repo.GetAllAlbums()
 	result := []models.Album{}
 	for _, album := range albums {
