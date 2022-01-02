@@ -7,9 +7,9 @@ import (
 )
 
 type Album struct {
-	Uuid      uuid.UUID
-	Title     string
-	Artist    string
-	Price     float64
-	CreatedAt time.Time
+	Uuid      uuid.UUID `json:"uuid"`
+	Title     string    `json:"title"`
+	Artist    string    `json:"artist"`
+	Price     float64   `json:"price"`
+	CreatedAt time.Time `json:"createdAt"`
 }

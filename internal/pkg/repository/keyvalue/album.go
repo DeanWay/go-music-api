@@ -1,6 +1,7 @@
 package keyvalue
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -20,7 +21,9 @@ func (repo AlbumKeyValueRepo) GetAllAlbums() []models.Album {
 	storeList := repo.Store.List()
 	albums := make([]models.Album, len(storeList))
 	for i, v := range storeList {
-		albums[i] = v.(models.Album)
+		var album models.Album
+		json.Unmarshal([]byte(v), &album)
+		albums[i] = album
 	}
 	return albums
 }
@@ -28,8 +31,9 @@ func (repo AlbumKeyValueRepo) GetAllAlbums() []models.Album {
 func (repo AlbumKeyValueRepo) FindAlbumById(
 	id string,
 ) (models.Album, error) {
-	val, err := repo.Store.GetById(id)
-	album := val.(models.Album)
+	val, err := repo.Store.Get(id)
+	var album models.Album
+	json.Unmarshal([]byte(val), &album)
 	return album, err
 }
 
@@ -43,7 +47,8 @@ func (repo AlbumKeyValueRepo) AddAlbum(
 		Price:     request.Price,
 		CreatedAt: time.Now().UTC(),
 	}
-	repo.Store.Insert(newAlbum.Uuid.String(), newAlbum)
+	albumJson, _ := json.Marshal(newAlbum)
+	repo.Store.Insert(newAlbum.Uuid.String(), string(albumJson))
 	return newAlbum
 }
 
