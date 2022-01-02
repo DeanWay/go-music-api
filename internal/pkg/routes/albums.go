@@ -71,11 +71,11 @@ func (resource AlbumRouter) SearchAlbums(c *gin.Context) {
 	}
 
 	albums := resource.AlbumRepository.SearchAlbums(query)
-	c.IndentedJSON(http.StatusOK, albums)
+	c.IndentedJSON(http.StatusOK, albumsToResponse(albums))
 }
 
-func albumToResponse(album models.Album) payloads.Document {
-	return payloads.Document{
+func albumToResourceObject(album models.Album) payloads.ResourceObject {
+	return payloads.ResourceObject{
 		Id: album.Uuid.String(),
 		Attributes: payloads.AlbumAttributes{
 			Title:     album.Title,
@@ -86,10 +86,14 @@ func albumToResponse(album models.Album) payloads.Document {
 	}
 }
 
-func albumsToResponse(albums []models.Album) []payloads.Document {
-	newList := make([]payloads.Document, len(albums), len(albums))
+func albumToResponse(album models.Album) payloads.Response {
+	return payloads.MakeResponse(albumToResourceObject(album))
+}
+
+func albumsToResponse(albums []models.Album) payloads.ListResponse {
+	dataList := make([]payloads.ResourceObject, len(albums), len(albums))
 	for i, v := range albums {
-		newList[i] = albumToResponse(v)
+		dataList[i] = albumToResourceObject(v)
 	}
-	return newList
+	return payloads.MakeListResponse(dataList)
 }
