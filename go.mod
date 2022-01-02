@@ -1,4 +1,4 @@
-module go-todo-app
+module go-music-api
 
 go 1.17
 

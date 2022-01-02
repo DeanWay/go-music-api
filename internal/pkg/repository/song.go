@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"go-todo-app/internal/pkg/models"
-	"go-todo-app/internal/pkg/payloads"
+	"go-music-api/internal/pkg/models"
+	"go-music-api/internal/pkg/payloads"
 
 	"github.com/google/uuid"
 )

@@ -4,12 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 
-	"go-todo-app/internal/pkg/repository"
-	"go-todo-app/internal/pkg/repository/keyvalue"
-	"go-todo-app/internal/pkg/routes"
-	"go-todo-app/internal/pkg/storage"
-	"go-todo-app/internal/pkg/storage/memory"
-	redisStorage "go-todo-app/internal/pkg/storage/redis"
+	"go-music-api/internal/pkg/repository"
+	"go-music-api/internal/pkg/repository/keyvalue"
+	"go-music-api/internal/pkg/routes"
+	"go-music-api/internal/pkg/storage"
+	"go-music-api/internal/pkg/storage/memory"
+	redisStorage "go-music-api/internal/pkg/storage/redis"
 )
 
 func App() *gin.Engine {

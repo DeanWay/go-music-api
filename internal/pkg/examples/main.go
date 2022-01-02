@@ -1,8 +1,8 @@
 package examples
 
 import (
-	"go-todo-app/internal/pkg/payloads"
-	"go-todo-app/internal/pkg/repository"
+	"go-music-api/internal/pkg/payloads"
+	"go-music-api/internal/pkg/repository"
 )
 
 func AddExampleAlbums(albumRepo repository.AlbumRepository) {
