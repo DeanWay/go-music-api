@@ -12,4 +12,5 @@ type SongRepository interface {
 		albumUuid uuid.UUID,
 		attrs payloads.SongAttributes,
 	) models.Song
+	FindSongById(id string) (models.Song, error)
 }

@@ -27,3 +27,12 @@ func (repo SongKeyValueRepo) AddSong(
 	repo.Store.Insert(newSong.Uuid.String(), string(songJson))
 	return newSong
 }
+
+func (repo SongKeyValueRepo) FindSongById(
+	id string,
+) (models.Song, error) {
+	val, err := repo.Store.Get(id)
+	var song models.Song
+	json.Unmarshal([]byte(val), &song)
+	return song, err
+}

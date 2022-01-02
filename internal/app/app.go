@@ -7,45 +7,56 @@ import (
 	"go-music-api/internal/pkg/repository"
 	"go-music-api/internal/pkg/repository/keyvalue"
 	"go-music-api/internal/pkg/routes"
-	"go-music-api/internal/pkg/storage"
-	"go-music-api/internal/pkg/storage/memory"
 	redisStorage "go-music-api/internal/pkg/storage/redis"
 )
 
 func App() *gin.Engine {
 	appEngine := gin.Default()
+	deps := initDeps()
 	albumRouter := routes.AlbumRouter{
-		AlbumRepository: initAlbumRepo(),
+		AlbumRepository: deps.AlbumRepo,
+	}
+	songRouter := routes.SongRouter{
+		SongRepository: deps.SongRepo,
 	}
 
+	// album
 	appEngine.GET("/album/:id", albumRouter.GetAlbumByID)
 	appEngine.GET("/albums", albumRouter.ListAlbums)
 	appEngine.POST("/albums", albumRouter.PostAlbums)
 	appEngine.GET("/albums/search", albumRouter.SearchAlbums)
+
+	// song
+	appEngine.GET("/song/:id", songRouter.GetSongByID)
 	return appEngine
 }
 
-func initAlbumRepo() repository.AlbumRepository {
-	albumRepo := keyvalue.AlbumKeyValueRepo{
-		Store: redisStore("album"),
-		SongRepo: keyvalue.SongKeyValueRepo{
-			Store: redisStore("song"),
+type Deps struct {
+	AlbumRepo repository.AlbumRepository
+	SongRepo  repository.SongRepository
+}
+
+func initDeps() Deps {
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+	songRepo := keyvalue.SongKeyValueRepo{
+		Store: redisStorage.RedisStorage{
+			CollectionName: "song",
+			Client:         redisClient,
 		},
 	}
-	return albumRepo
-}
-
-func memoryStore() storage.KeyValueStorage {
-	return memory.MemoryStorage{}
-}
-
-func redisStore(collectionName string) storage.KeyValueStorage {
-	return redisStorage.RedisStorage{
-		CollectionName: collectionName,
-		Client: redis.NewClient(&redis.Options{
-			Addr:     "localhost:6379",
-			Password: "", // no password set
-			DB:       0,  // use default DB
-		}),
+	albumRepo := keyvalue.AlbumKeyValueRepo{
+		Store: redisStorage.RedisStorage{
+			CollectionName: "album",
+			Client:         redisClient,
+		},
+		SongRepo: songRepo,
+	}
+	return Deps{
+		AlbumRepo: albumRepo,
+		SongRepo:  songRepo,
 	}
 }
