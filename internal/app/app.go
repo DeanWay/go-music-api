@@ -5,6 +5,7 @@ import (
 
 	"go-todo-app/internal/pkg/examples"
 	"go-todo-app/internal/pkg/repository"
+	"go-todo-app/internal/pkg/repository/keyvalue"
 	"go-todo-app/internal/pkg/routes"
 	"go-todo-app/internal/pkg/storage/memory"
 )
@@ -22,7 +23,7 @@ func App() *gin.Engine {
 }
 
 func initAlbumRepo() repository.AlbumRepository {
-	albumRepo := repository.AlbumKeyValueRepo{
+	albumRepo := keyvalue.AlbumKeyValueRepo{
 		Store: memory.MemoryStorage{},
 	}
 	examples.AddExampleAlbums(albumRepo)
