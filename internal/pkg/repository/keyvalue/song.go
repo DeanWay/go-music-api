@@ -17,12 +17,7 @@ func (repo SongKeyValueRepo) AddSong(
 	albumUuid uuid.UUID,
 	attrs payloads.SongAttributes,
 ) models.Song {
-	newSong := models.Song{
-		Uuid:            uuid.New(),
-		AlbumUuid:       albumUuid,
-		Title:           attrs.Title,
-		DurationSeconds: attrs.DurationSeconds,
-	}
+	newSong := models.NewSong(albumUuid, attrs)
 	songJson, _ := json.Marshal(newSong)
 	repo.Store.Insert(newSong.Uuid.String(), string(songJson))
 	return newSong

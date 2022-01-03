@@ -2,7 +2,6 @@ package keyvalue
 
 import (
 	"encoding/json"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -41,13 +40,7 @@ func (repo AlbumKeyValueRepo) AddAlbum(
 	attrs payloads.AlbumAttributes,
 	songAttrs []payloads.SongAttributes,
 ) models.Album {
-	newAlbum := models.Album{
-		Uuid:      uuid.New(),
-		Title:     attrs.Title,
-		Artist:    attrs.Artist,
-		Price:     attrs.Price,
-		CreatedAt: time.Now().UTC(),
-	}
+	newAlbum := models.NewAlbum(attrs)
 	songUuids := make([]uuid.UUID, len(songAttrs), len(songAttrs))
 	for i, song := range songAttrs {
 		newSong := repo.SongRepo.AddSong(newAlbum.Uuid, song)
