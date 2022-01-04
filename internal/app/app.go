@@ -10,9 +10,8 @@ import (
 	psqlStorage "go-music-api/internal/pkg/storage/postgres"
 )
 
-func App() *gin.Engine {
+func App(deps *Deps) *gin.Engine {
 	appEngine := gin.Default()
-	deps := initDeps()
 	albumRouter := routes.AlbumRouter{
 		AlbumRepository: deps.AlbumRepo,
 	}
@@ -32,17 +31,11 @@ func App() *gin.Engine {
 }
 
 type Deps struct {
-	AlbumRepo   repository.AlbumRepository
-	SongRepo    repository.SongRepository
-	redisClient *redis.Client
+	AlbumRepo repository.AlbumRepository
+	SongRepo  repository.SongRepository
 }
 
-func initDeps() Deps {
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "",
-		DB:       0,
-	})
+func DefaultDeps() Deps {
 	postgresStorage := psqlStorage.New(
 		psqlStorage.ConnectionParams{
 			Username: "postgres",
@@ -61,8 +54,15 @@ func initDeps() Deps {
 		SongRepo: songRepo,
 	}
 	return Deps{
-		AlbumRepo:   albumRepo,
-		SongRepo:    songRepo,
-		redisClient: redisClient,
+		AlbumRepo: albumRepo,
+		SongRepo:  songRepo,
 	}
+}
+
+func newRedisClient() *redis.Client {
+	return redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
 }
