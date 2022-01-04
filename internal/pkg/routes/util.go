@@ -12,11 +12,11 @@ func badRequest(c *gin.Context) {
 }
 
 func parseFloatQuery(c *gin.Context, key string) (*float64, error) {
-	priceHigh, present := c.GetQuery(key)
+	stringVal, present := c.GetQuery(key)
 	if !present {
 		return nil, nil
 	}
-	float, err := strconv.ParseFloat(priceHigh, 64)
+	float, err := strconv.ParseFloat(stringVal, 64)
 	if err != nil {
 		return nil, err
 	}
