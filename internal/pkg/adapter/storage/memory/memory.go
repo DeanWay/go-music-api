@@ -3,6 +3,7 @@ package memory
 import (
 	"errors"
 	"go-music-api/internal/pkg/adapter/storage"
+	"strings"
 )
 
 type MemoryStorage map[string]string
@@ -23,12 +24,12 @@ func (store MemoryStorage) Get(key string) (string, error) {
 	}
 }
 
-func (store MemoryStorage) List() []string {
-	values := make([]string, len(store), len(store))
-	i := 0
-	for _, value := range store {
-		values[i] = value
-		i++
+func (store MemoryStorage) List(prefix string) []string {
+	values := []string{}
+	for key, value := range store {
+		if strings.HasPrefix(key, prefix) {
+			values = append(values, value)
+		}
 	}
 	return values
 }

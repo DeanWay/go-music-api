@@ -5,7 +5,7 @@ import "github.com/doug-martin/goqu/v9"
 type KeyValueStorage interface {
 	Insert(key string, value string) error
 	Get(key string) (string, error)
-	List() []string
+	List(prefix string) []string
 	Delete(key string) error
 }
 

@@ -1,65 +1,99 @@
 package api_test
 
 import (
+	"encoding/json"
 	"go-music-api/internal/app"
-	"go-music-api/internal/pkg/models"
-	"go-music-api/test/fakes/repo"
+	"go-music-api/internal/pkg/adapter/repository/keyvalue"
+	"go-music-api/internal/pkg/adapter/storage/memory"
+	"go-music-api/internal/pkg/domain/entity"
+	"go-music-api/internal/pkg/http/payloads"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetAllAlbums(t *testing.T) {
-	server := app.App(&app.Deps{
-		AlbumRepo: repo.FakeAlbumRepo{
-			Albums: []models.Album{
-				{
-					Uuid:   uuid.MustParse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-					Title:  "The album",
-					Artist: "Queen",
-					Price:  1.2,
-					SongUuids: []uuid.UUID{
-						uuid.MustParse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
-					},
-				},
-			},
-		},
-		SongRepo: repo.FakeSongRepo{},
-	})
-
-	response := httptest.NewRecorder()
-	request, _ := http.NewRequest("GET", "/albums", nil)
-	server.ServeHTTP(response, request)
-
-	expectedJSON := `
-	{
-		"data": [
+func PostAlbumsTestCase(deps *app.Deps) func(*testing.T) {
+	return func(t *testing.T) {
+		server := app.App(deps)
+		response := httptest.NewRecorder()
+		request, _ := http.NewRequest(
+			"POST",
+			"/albums",
+			strings.NewReader(`
 			{
-				"id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-				"type": "album",
-				"attributes": {
-					"title": "The album",
-					"artist": "Queen",
-					"price": 1.2
-				},
-				"relationships": {
-					"songs": {
-						"data": [
-							{
-								"id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
-								"type": "song"
-							}
-						]
+				"data": {
+					"attributes": {
+						"title": "The album",
+						"artist": "Queen",
+						"price": 1.2
 					}
 				}
 			}
-		],
-		"meta": {"count": 1}
+			`),
+		)
+		server.ServeHTTP(response, request)
+		assert.Equal(t, http.StatusCreated, response.Result().StatusCode)
+		var responseBody payloads.Response
+		err := json.Unmarshal(response.Body.Bytes(), &responseBody)
+		assert.Nil(t, err)
+		createdAlbum, err := deps.AlbumRepository.GetAlbumById(responseBody.Data.Id)
+		assert.Nil(t, err)
+		assert.Equal(t, "The album", createdAlbum.Title)
+		assert.Equal(t, "Queen", createdAlbum.Artist)
+		assert.Equal(t, 1.2, createdAlbum.Price)
 	}
-	`
-	assert.Equal(t, http.StatusOK, response.Result().StatusCode)
-	assert.JSONEq(t, response.Body.String(), expectedJSON)
+}
+
+func GetAlbumsTestCase(deps *app.Deps) func(*testing.T) {
+	return func(t *testing.T) {
+		server := app.App(deps)
+
+		deps.AlbumRepository.AddAlbum(
+			entity.Album{
+				Id:     uuid.MustParse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+				Title:  "The album",
+				Artist: "Queen",
+				Price:  1.2,
+				SongIds: []uuid.UUID{
+					uuid.MustParse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+				},
+			},
+		)
+
+		response := httptest.NewRecorder()
+		request, _ := http.NewRequest("GET", "/albums", nil)
+		server.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusOK, response.Result().StatusCode)
+		var responseBody payloads.ListResponse
+		err := json.Unmarshal(response.Body.Bytes(), &responseBody)
+		assert.Nil(t, err)
+		var responseAttributes payloads.AlbumAttributes
+		attrsJson, err := json.Marshal(responseBody.Data[0].Attributes)
+		assert.Nil(t, err)
+		err = json.Unmarshal(attrsJson, &responseAttributes)
+		assert.Nil(t, err)
+	}
+}
+
+func TestAlbumsApi(t *testing.T) {
+
+	t.Run("create album", PostAlbumsTestCase(createDeps()))
+	t.Run("get albums", GetAlbumsTestCase(createDeps()))
+}
+
+func createDeps() *app.Deps {
+	store := memory.MemoryStorage{}
+	return &app.Deps{
+		AlbumRepository: keyvalue.AlbumKeyValueRepository{
+			Store: store,
+		},
+		SongRepository: keyvalue.SongKeyValueRepository{
+			Store: store,
+		},
+	}
 }

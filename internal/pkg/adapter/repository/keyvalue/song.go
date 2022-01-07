@@ -11,6 +11,8 @@ type SongKeyValueRepository struct {
 	Store storage.KeyValueStorage
 }
 
+const songPrefix = "song"
+
 var _ port.SongRepository = (*SongKeyValueRepository)(nil)
 
 func (repo SongKeyValueRepository) AddSong(
@@ -20,14 +22,16 @@ func (repo SongKeyValueRepository) AddSong(
 	if err != nil {
 		return err
 	}
-	repo.Store.Insert(newSong.Id.String(), string(songJson))
+	key := withPrefix(songPrefix, newSong.Id.String())
+	repo.Store.Insert(key, string(songJson))
 	return nil
 }
 
 func (repo SongKeyValueRepository) GetSongById(
 	id string,
 ) (entity.Song, error) {
-	val, err := repo.Store.Get(id)
+	key := withPrefix(songPrefix, id)
+	val, err := repo.Store.Get(key)
 	if err != nil {
 		return entity.Song{}, err
 	}

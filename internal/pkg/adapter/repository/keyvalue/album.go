@@ -2,6 +2,7 @@ package keyvalue
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"go-music-api/internal/pkg/adapter/storage"
 	"go-music-api/internal/pkg/domain/entity"
@@ -14,8 +15,14 @@ type AlbumKeyValueRepository struct {
 
 var _ port.AlbumRepository = (*AlbumKeyValueRepository)(nil)
 
+const albumPrefix = "album"
+
+func withPrefix(prefix string, key string) string {
+	return fmt.Sprintf("%s:%s", prefix, key)
+}
+
 func (repo AlbumKeyValueRepository) ListAlbums() ([]entity.Album, error) {
-	storeList := repo.Store.List()
+	storeList := repo.Store.List(albumPrefix)
 	albums := make([]entity.Album, len(storeList))
 	for i, v := range storeList {
 		var album entity.Album
@@ -31,7 +38,7 @@ func (repo AlbumKeyValueRepository) ListAlbums() ([]entity.Album, error) {
 func (repo AlbumKeyValueRepository) GetAlbumById(
 	id string,
 ) (entity.Album, error) {
-	val, err := repo.Store.Get(id)
+	val, err := repo.Store.Get(withPrefix(albumPrefix, id))
 	if err != nil {
 		return entity.Album{}, err
 	}
@@ -44,7 +51,8 @@ func (repo AlbumKeyValueRepository) AddAlbum(
 	newAlbum entity.Album,
 ) error {
 	albumJson, _ := json.Marshal(newAlbum)
-	repo.Store.Insert(newAlbum.Id.String(), string(albumJson))
+	key := withPrefix(albumPrefix, newAlbum.Id.String())
+	repo.Store.Insert(key, string(albumJson))
 	return nil
 }
 
