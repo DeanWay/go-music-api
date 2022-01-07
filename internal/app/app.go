@@ -4,35 +4,61 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 
-	"go-music-api/internal/pkg/repository"
-	"go-music-api/internal/pkg/repository/postgres"
-	"go-music-api/internal/pkg/routes"
-	psqlStorage "go-music-api/internal/pkg/storage/postgres"
+	"go-music-api/internal/pkg/adapter/repository/postgres"
+	psqlStorage "go-music-api/internal/pkg/adapter/storage/postgres"
+	"go-music-api/internal/pkg/domain/port"
+	"go-music-api/internal/pkg/domain/usecase"
+	"go-music-api/internal/pkg/http/routes"
 )
 
 func App(deps *Deps) *gin.Engine {
 	appEngine := gin.Default()
-	albumRouter := routes.AlbumRouter{
-		AlbumRepository: deps.AlbumRepo,
-	}
-	songRouter := routes.SongRouter{
-		SongRepository: deps.SongRepo,
-	}
 
 	// album
-	appEngine.GET("/album/:id", albumRouter.GetAlbumByID)
-	appEngine.GET("/albums", albumRouter.ListAlbums)
-	appEngine.POST("/albums", albumRouter.PostAlbums)
-	appEngine.GET("/albums/search", albumRouter.SearchAlbums)
+	appEngine.GET(
+		"/album/:id",
+		routes.GetAlbumByID(usecase.GetAlbumUseCase{
+			AlbumRepository: deps.AlbumRepository,
+		}),
+	)
+	appEngine.GET(
+		"/albums",
+		routes.ListAlbums(usecase.ListAlbumsUseCase{
+			AlbumRepository: deps.AlbumRepository,
+		}),
+	)
+	appEngine.POST(
+		"/albums",
+		routes.PostAlbums(usecase.CreateAlbumUseCase{
+			AlbumRepository: deps.AlbumRepository,
+		}),
+	)
+	appEngine.GET(
+		"/albums/search",
+		routes.SearchAlbums(usecase.SearchAlbumsUseCase{
+			AlbumRepository: deps.AlbumRepository,
+		}),
+	)
 
 	// song
-	appEngine.GET("/song/:id", songRouter.GetSongByID)
+	appEngine.GET(
+		"/song/:id",
+		routes.GetSongByID(usecase.GetSongUseCase{
+			SongRepository: deps.SongRepository,
+		}),
+	)
+	appEngine.POST(
+		"/songs",
+		routes.PostSong(usecase.CreateSongUseCase{
+			SongRepository: deps.SongRepository,
+		}),
+	)
 	return appEngine
 }
 
 type Deps struct {
-	AlbumRepo repository.AlbumRepository
-	SongRepo  repository.SongRepository
+	AlbumRepository port.AlbumRepository
+	SongRepository  port.SongRepository
 }
 
 func DefaultDeps() Deps {
@@ -46,16 +72,15 @@ func DefaultDeps() Deps {
 		},
 	)
 
-	songRepo := postgres.SongPostgresRepo{
+	songRepo := postgres.SongPostgresRepository{
 		Store: postgresStorage,
 	}
-	albumRepo := postgres.AlbumPostgresRepo{
-		Store:    postgresStorage,
-		SongRepo: songRepo,
+	albumRepo := postgres.AlbumPostgresRepository{
+		Store: postgresStorage,
 	}
 	return Deps{
-		AlbumRepo: albumRepo,
-		SongRepo:  songRepo,
+		AlbumRepository: albumRepo,
+		SongRepository:  songRepo,
 	}
 }
 
