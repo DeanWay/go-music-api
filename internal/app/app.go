@@ -63,12 +63,15 @@ type Deps struct {
 
 func DefaultDeps() Deps {
 	postgresStorage := psqlStorage.New(
-		psqlStorage.ConnectionParams{
-			Username: "postgres",
-			Password: "mysecretpassword",
-			Host:     "localhost",
-			Port:     "5432",
-			Database: "music",
+		psqlStorage.Config{
+			ConnectionParams: psqlStorage.ConnectionParams{
+				Username: "postgres",
+				Password: "mysecretpassword",
+				Host:     "localhost",
+				Port:     "5432",
+				Database: "music",
+			},
+			LogSql: true,
 		},
 	)
 

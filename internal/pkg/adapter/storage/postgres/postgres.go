@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"go-music-api/internal/pkg/adapter/storage"
+	"log"
+	"os"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
@@ -17,13 +19,12 @@ type PostgresStorage struct {
 var _ storage.SqlStorage = (*PostgresStorage)(nil)
 
 func New(
-	params ConnectionParams,
+	config Config,
 ) PostgresStorage {
-
-	fmt.Println(params.String())
+	connectionParams := config.ConnectionParams
 	db, err := sql.Open(
 		"postgres",
-		params.String(),
+		connectionParams.String(),
 	)
 	if err != nil {
 		panic(err)
@@ -32,13 +33,25 @@ func New(
 	if err != nil {
 		panic(err)
 	}
+	goqu.SetDefaultPrepared(true)
+	goquDb := goqu.New("postgres", db)
+	if config.LogSql {
+		logger := log.Default()
+		logger.SetOutput(os.Stdout)
+		goquDb.Logger(logger)
+	}
 	return PostgresStorage{
-		db: goqu.New("postgres", db),
+		db: goquDb,
 	}
 }
 
 func (store PostgresStorage) DB() *goqu.Database {
 	return store.db
+}
+
+type Config struct {
+	ConnectionParams ConnectionParams
+	LogSql           bool
 }
 
 type ConnectionParams struct {
