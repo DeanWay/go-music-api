@@ -8,7 +8,7 @@ import (
 )
 
 type CreateSongUseCase struct {
-	SongRepository port.SongRepository
+	SongRepository port.HasAddSong
 }
 
 func (usecase CreateSongUseCase) CreateSong(

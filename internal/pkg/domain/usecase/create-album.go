@@ -9,7 +9,7 @@ import (
 )
 
 type CreateAlbumUseCase struct {
-	AlbumRepository port.AlbumRepository
+	AlbumRepository port.HasAddAlbum
 }
 
 func (usecase CreateAlbumUseCase) CreateAlbum(

@@ -6,7 +6,7 @@ import (
 )
 
 type SearchAlbumsUseCase struct {
-	AlbumRepository port.AlbumRepository
+	AlbumRepository port.HasSearchAlbums
 }
 
 func (usecase SearchAlbumsUseCase) SearchAlbums(

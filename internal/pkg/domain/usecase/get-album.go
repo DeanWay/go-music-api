@@ -6,7 +6,7 @@ import (
 )
 
 type GetAlbumUseCase struct {
-	AlbumRepository port.AlbumRepository
+	AlbumRepository port.HasGetAlbumById
 }
 
 func (usecase GetAlbumUseCase) GetAlbum(id string) (entity.Album, error) {

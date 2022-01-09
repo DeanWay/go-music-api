@@ -6,7 +6,7 @@ import (
 )
 
 type GetSongUseCase struct {
-	SongRepository port.SongRepository
+	SongRepository port.HasGetSongById
 }
 
 func (usecase GetSongUseCase) GetSong(id string) (entity.Song, error) {
