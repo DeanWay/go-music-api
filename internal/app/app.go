@@ -4,8 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 
+	"go-music-api/internal/pkg/adapter/repository/keyvalue"
 	"go-music-api/internal/pkg/adapter/repository/postgres"
+	"go-music-api/internal/pkg/adapter/storage/memory"
 	psqlStorage "go-music-api/internal/pkg/adapter/storage/postgres"
+	redisstorage "go-music-api/internal/pkg/adapter/storage/redis"
 	"go-music-api/internal/pkg/domain/port"
 	"go-music-api/internal/pkg/domain/usecase"
 	"go-music-api/internal/pkg/http/routes"
@@ -62,6 +65,10 @@ type Deps struct {
 }
 
 func DefaultDeps() Deps {
+	return PostgresDeps()
+}
+
+func PostgresDeps() Deps {
 	postgresStorage := psqlStorage.New(
 		psqlStorage.Config{
 			ConnectionParams: psqlStorage.ConnectionParams{
@@ -80,6 +87,38 @@ func DefaultDeps() Deps {
 	}
 	albumRepo := postgres.AlbumPostgresRepository{
 		Store: postgresStorage,
+	}
+	return Deps{
+		AlbumRepository: albumRepo,
+		SongRepository:  songRepo,
+	}
+}
+
+func RedisDeps() Deps {
+	redisClient := newRedisClient()
+	songRepo := keyvalue.SongKeyValueRepository{
+		Store: redisstorage.RedisStorage{
+			Client: redisClient,
+		},
+	}
+	albumRepo := keyvalue.AlbumKeyValueRepository{
+		Store: redisstorage.RedisStorage{
+			Client: redisClient,
+		},
+	}
+	return Deps{
+		AlbumRepository: albumRepo,
+		SongRepository:  songRepo,
+	}
+}
+
+func InMemoryDeps() Deps {
+	memoryStore := memory.MemoryStorage{}
+	songRepo := keyvalue.SongKeyValueRepository{
+		Store: memoryStore,
+	}
+	albumRepo := keyvalue.AlbumKeyValueRepository{
+		Store: memoryStore,
 	}
 	return Deps{
 		AlbumRepository: albumRepo,
