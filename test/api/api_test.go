@@ -2,9 +2,8 @@ package api_test
 
 import (
 	"encoding/json"
+	"go-music-api/config"
 	"go-music-api/internal/app"
-	"go-music-api/internal/pkg/adapter/repository/keyvalue"
-	"go-music-api/internal/pkg/adapter/storage/memory"
 	"go-music-api/internal/pkg/domain/entity"
 	"go-music-api/internal/pkg/http/payloads"
 	"net/http"
@@ -16,9 +15,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func PostAlbumsTestCase(deps *app.Deps) func(*testing.T) {
+func PostAlbumsTestCase(deps *config.Deps) func(*testing.T) {
 	return func(t *testing.T) {
-		server := app.App(deps)
+		server := app.RestApiApp(deps)
 		response := httptest.NewRecorder()
 		request, _ := http.NewRequest(
 			"POST",
@@ -48,9 +47,9 @@ func PostAlbumsTestCase(deps *app.Deps) func(*testing.T) {
 	}
 }
 
-func GetAlbumsTestCase(deps *app.Deps) func(*testing.T) {
+func GetAlbumsTestCase(deps *config.Deps) func(*testing.T) {
 	return func(t *testing.T) {
-		server := app.App(deps)
+		server := app.RestApiApp(deps)
 
 		deps.AlbumRepository.AddAlbum(
 			entity.Album{
@@ -81,19 +80,17 @@ func GetAlbumsTestCase(deps *app.Deps) func(*testing.T) {
 }
 
 func TestAlbumsApi(t *testing.T) {
-
-	t.Run("create album", PostAlbumsTestCase(createDeps()))
-	t.Run("get albums", GetAlbumsTestCase(createDeps()))
+	for _, deps := range createDeps() {
+		t.Run("create album", PostAlbumsTestCase(deps))
+		t.Run("get albums", GetAlbumsTestCase(deps))
+	}
 }
 
-func createDeps() *app.Deps {
-	store := memory.MemoryStorage{}
-	return &app.Deps{
-		AlbumRepository: keyvalue.AlbumKeyValueRepository{
-			Store: store,
-		},
-		SongRepository: keyvalue.SongKeyValueRepository{
-			Store: store,
-		},
+func createDeps() []*config.Deps {
+	inMemoryDeps := config.InMemoryDeps()
+	postgresDeps := config.PostgresDeps()
+	return []*config.Deps{
+		&inMemoryDeps,
+		&postgresDeps,
 	}
 }
