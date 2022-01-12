@@ -5,6 +5,7 @@ import (
 	"go-music-api/internal/pkg/domain/entity"
 	"go-music-api/internal/pkg/domain/failure"
 	"go-music-api/internal/pkg/domain/port"
+	"net/url"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/google/uuid"
@@ -17,13 +18,14 @@ type SongPostgresRepository struct {
 var _ port.SongRepository = (*SongPostgresRepository)(nil)
 
 func (repo SongPostgresRepository) AddSong(
-	newSong entity.Song,
+	song entity.Song,
 ) error {
 	row := songRow{
-		Id:              newSong.Id,
-		Title:           newSong.Title,
-		Artist:          newSong.Artist,
-		DurationSeconds: newSong.DurationSeconds,
+		Id:              song.Id,
+		Title:           song.Title,
+		Artist:          song.Artist,
+		DurationSeconds: song.DurationSeconds,
+		AudioFile:       song.AudioFile.String(),
 	}
 	_, err := repo.Store.DB().Insert("song").Rows(row).Executor().Exec()
 	return err
@@ -53,13 +55,16 @@ type songRow struct {
 	Title           string    `db:"title"`
 	Artist          string    `db:"artist"`
 	DurationSeconds uint      `db:"duration_seconds"`
+	AudioFile       string    `db:"audio_file"`
 }
 
 func (row songRow) toEntity() entity.Song {
+	audioFileUrl, _ := url.Parse(row.AudioFile)
 	return entity.Song{
 		Id:              row.Id,
 		Title:           row.Title,
 		Artist:          row.Artist,
 		DurationSeconds: row.DurationSeconds,
+		AudioFile:       *audioFileUrl,
 	}
 }

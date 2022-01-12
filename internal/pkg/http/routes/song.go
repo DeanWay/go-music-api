@@ -3,6 +3,7 @@ package routes
 import (
 	"errors"
 	"net/http"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 
@@ -30,16 +31,18 @@ func GetSongByID(getSong usecase.GetSongUseCase) gin.HandlerFunc {
 func PostSong(createSong usecase.CreateSongUseCase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var request payloads.SongRequest
-		err := c.BindJSON(&request)
-		if err != nil {
+		bindJsonErr := c.BindJSON(&request)
+		attrs := request.Data.Attributes
+		audioFileUrl, urlParseErr := url.Parse(attrs.AudioFile)
+		if bindJsonErr != nil || urlParseErr != nil {
 			badRequest(c)
 			return
 		}
-		attrs := request.Data.Attributes
 		newSong, err := createSong.CreateSong(
 			attrs.Title,
 			attrs.Artist,
 			attrs.DurationSeconds,
+			*audioFileUrl,
 		)
 		if err != nil {
 			panic(err)
@@ -57,6 +60,7 @@ func songToResourceObject(song entity.Song) payloads.ResponseResourceObject {
 			Title:           song.Title,
 			Artist:          song.Artist,
 			DurationSeconds: song.DurationSeconds,
+			AudioFile:       song.AudioFile.String(),
 		},
 	}
 }

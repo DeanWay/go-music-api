@@ -1,5 +1,3 @@
-create database music;
-
 create table album (
   uuid UUID primary key,
   title varchar(255) not null,
@@ -12,7 +10,8 @@ create table song (
   uuid UUID primary key,
   title varchar(255) not null,
   artist varchar(255) not null,
-  duration_seconds integer not null
+  duration_seconds integer not null,
+  audio_file varchar(255) null
 );
 
 create table album_song (
